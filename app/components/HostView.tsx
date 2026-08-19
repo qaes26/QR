@@ -9,6 +9,7 @@ interface HostViewProps {
   isPeerReady: boolean;
   transfers: FileTransfer[];
   shareUrl: string;
+  onOpenScanner?: () => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -39,6 +40,7 @@ export default function HostView({
   isPeerReady,
   transfers,
   shareUrl,
+  onOpenScanner,
 }: HostViewProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 fade-in">
@@ -132,13 +134,23 @@ export default function HostView({
           )}
 
           {/* Room info */}
-          <div className="w-full mt-auto pt-4 border-t border-zinc-800">
+          <div className="w-full mt-auto pt-4 border-t border-zinc-800 flex flex-col gap-4">
             <div className="flex items-center justify-between text-xs text-zinc-500">
               <span>معرّف الجلسة</span>
               <code className="bg-zinc-900/80 px-3 py-1 rounded-md font-mono text-indigo-400">
                 {roomId}
               </code>
             </div>
+
+            <button
+              onClick={() => onOpenScanner && onOpenScanner()}
+              className="w-full py-2.5 rounded-lg border border-zinc-700 bg-zinc-800/50 text-zinc-300 text-sm font-medium hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h4a1 1 0 010 2H5v3a1 1 0 01-2 0V4zm14-1a1 1 0 011 1v3a1 1 0 01-2 0V5h-3a1 1 0 010-2h4zM4 17a1 1 0 012 0v3h3a1 1 0 010 2H5a1 1 0 01-1-1v-4zm15 1a1 1 0 01-1 1h-3a1 1 0 010 2h4a1 1 0 011-1v-4a1 1 0 01-2 0v3z" />
+              </svg>
+              أريد إرسال ملفات (مسح رمز QR)
+            </button>
           </div>
         </div>
 

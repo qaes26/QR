@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { usePeer } from "./hooks/usePeer";
 import HostView from "./components/HostView";
 import ClientView from "./components/ClientView";
 import Footer from "./components/Footer";
+import QRScanner from "./components/QRScanner";
 
 function generateRoomId(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -13,6 +14,7 @@ function generateRoomId(): string {
 
 function FileShareApp() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const roomParam = searchParams.get("room");
 
   // Determine if this is a host (no room param = laptop opens fresh)
@@ -21,6 +23,7 @@ function FileShareApp() {
 
   const [roomId, setRoomId] = useState<string>("");
   const [mounted, setMounted] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -43,6 +46,26 @@ function FileShareApp() {
     return `${origin}?room=${roomId}`;
   }, [roomId]);
 
+  const handleScan = (url: string) => {
+    setShowScanner(false);
+    try {
+      const urlObj = new URL(url);
+      const scannedRoom = urlObj.searchParams.get("room");
+      if (scannedRoom) {
+        router.push(`/?room=${scannedRoom}`);
+      } else {
+        window.location.href = url;
+      }
+    } catch {
+      if (url.includes("room=")) {
+        const match = url.match(/room=([^&]+)/);
+        if (match) router.push(`/?room=${match[1]}`);
+      } else {
+        router.push(`/?room=${url}`);
+      }
+    }
+  };
+
   if (!mounted || !roomId) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -56,6 +79,10 @@ function FileShareApp() {
 
   return (
     <>
+      {showScanner && (
+        <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+      )}
+
       {/* Decorative particles */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div
@@ -106,6 +133,7 @@ function FileShareApp() {
             isPeerReady={isPeerReady}
             transfers={transfers}
             shareUrl={shareUrl}
+            onOpenScanner={() => setShowScanner(true)}
           />
         ) : (
           <ClientView
